@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Abigail Diaz — Systems Engineer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+
+  :root{
+    --bg:      #0a0e0c;
+    --panel:   #10160f;
+    --line:    #24322a;
+    --ink:     #e9e6da;
+    --ink-dim: #7c8c7f;
+    --amber:   #ffb454;
+    --scope:   #7fd9c4;
+    --radius:  3px;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html{ scroll-behavior:smooth; }
+
+  body{
+    background: var(--bg);
+    color: var(--ink);
+    font-family:'IBM Plex Sans', system-ui, sans-serif;
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  ::selection{ background:var(--amber); color:#0a0e0c; }
+
+  a{ color:var(--ink); text-decoration:none; }
+  .mono{ font-family:'JetBrains Mono', ui-monospace, monospace; }
+
+  :focus-visible{
+    outline:2px solid var(--amber);
+    outline-offset:3px;
+  }
+
+  /* ---------- background grid ---------- */
+  .grid-overlay{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      linear-gradient(to right, rgba(127,217,196,0.045) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(127,217,196,0.045) 1px, transparent 1px);
+    background-size: 42px 42px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 40%, transparent 85%);
+  }
+
+  .wrap{
+    position:relative; z-index:1;
+    max-width:900px; margin:0 auto;
+    padding: 2rem 1.5rem 6rem;
+  }
+
+  /* ---------- header ---------- */
+  header.site{
+    display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:wrap; gap:0.9rem;
+    padding-bottom:1.4rem;
+    border-bottom:1px solid var(--line);
+    margin-bottom:0;
+    opacity:0; transform:translateY(-6px);
+  }
+  .ready header.site{
+    opacity:1; transform:none;
+    transition: opacity .5s ease, transform .5s ease;
+  }
+
+  .brand{ display:flex; align-items:center; gap:0.6rem; }
+  .id-chip{
+    position:relative; flex:none;
+    width:44px; height:44px;
+    border:1px solid var(--line); border-radius:2px;
+    background:var(--panel); color:var(--ink-dim);
+  }
+  .id-chip svg, .id-chip img{ width:100%; height:100%; display:block; object-fit:cover; }
+  .id-chip img{ filter:grayscale(1) contrast(1.05); }
+  .id-chip::after{
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background:rgba(255,180,84,0.3); mix-blend-mode:color;
+  }
+  .id-chip .tick{ width:8px; height:8px; }
+  .id-chip:hover .tick{ opacity:1; transform:translate(0,0); }
+  .brand-name{ font-size:0.95rem; font-weight:600; letter-spacing:0.01em; }
+
+  .status-line{
+    display:flex; align-items:center; gap:0.5rem;
+    font-size:0.72rem; color:var(--ink-dim);
+  }
+  .status-dot{
+    width:6px; height:6px; border-radius:50%;
+    background:var(--scope);
+    box-shadow:0 0 0 0 rgba(127,217,196,0.6);
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{ box-shadow:0 0 0 0 rgba(127,217,196,0.45); }
+    50%{ box-shadow:0 0 0 4px rgba(127,217,196,0); }
+  }
+
+  nav.links{ display:flex; gap:0; font-size:0.8rem; }
+  nav.links a{
+    padding:0 0.9rem; color:var(--ink-dim);
+    border-left:1px solid var(--line);
+    transition: color .15s ease;
+  }
+  nav.links a:first-child{ border-left:none; padding-left:0; }
+  nav.links a:hover{ color:var(--amber); }
+
+  /* ---------- hero ---------- */
+  .hero{
+    display:grid; grid-template-columns: 1.3fr 1fr;
+    gap:2rem; align-items:center;
+    padding: 3.2rem 0 2.6rem;
+  }
+  @media (max-width:720px){
+    .hero{ grid-template-columns:1fr; padding-top:2.2rem; }
+    .orbit-wrap{ margin:0 auto; }
+  }
+
+  .hero-copy{
+    opacity:0; transform:translateY(10px);
+  }
+  .ready .hero-copy{
+    opacity:1; transform:none;
+    transition: opacity .6s ease .15s, transform .6s ease .15s;
+  }
+
+  h1.headline{
+    font-family:'Big Shoulders Display', sans-serif;
+    font-weight:700;
+    font-size: clamp(2.4rem, 5.4vw, 3.7rem);
+    line-height:0.96;
+    letter-spacing:-0.01em;
+    color:#fbfaf5;
+    max-width:17ch;
+  }
+
+  .hero-copy p.sub{
+    margin-top:1rem;
+    color:var(--ink-dim);
+    font-size:1.02rem;
+    max-width:44ch;
+  }
+
+  .telemetry-strip{
+    margin-top:1.8rem;
+    display:flex; flex-wrap:wrap; gap:0;
+    border-top:1px solid var(--line);
+    padding-top:0.9rem;
+  }
+  .telemetry-item{
+    padding:0 1.1rem;
+    border-left:1px solid var(--line);
+  }
+  .telemetry-item:first-child{ border-left:none; padding-left:0; }
+  .telemetry-item .t-label{
+    display:block; font-size:0.62rem; letter-spacing:0.04em;
+    color:var(--ink-dim); margin-bottom:0.25rem;
+  }
+  .telemetry-item .t-value{
+    font-size:0.82rem; color:var(--scope);
+  }
+  .telemetry-item .t-value.amber{ color:var(--amber); }
+
+  /* ---------- orbit diagram ---------- */
+  .orbit-wrap{
+    position:relative; width:190px; height:190px;
+    opacity:0;
+  }
+  .ready .orbit-wrap{
+    opacity:1;
+    transition: opacity 1s ease .4s;
+  }
+  .orbit-path{
+    position:absolute; inset:12px;
+    border:1px dashed var(--line);
+    border-radius:50%;
+  }
+  .globe{ position:absolute; inset:0; width:100%; height:100%; }
+  .orbit-rotator{
+    position:absolute; inset:12px;
+    animation: spin 16s linear infinite;
+  }
+  @media (prefers-reduced-motion: reduce){
+    .orbit-rotator{ animation:none; }
+  }
+  .satellite{
+    position:absolute; top:-4px; left:50%;
+    width:8px; height:8px; margin-left:-4px;
+    background:var(--amber); border-radius:50%;
+    box-shadow:0 0 8px 1px rgba(255,180,84,0.75);
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  /* ---------- section heading ---------- */
+  .section-head{
+    display:flex; align-items:baseline; justify-content:space-between;
+    border-top:1px solid var(--line);
+    padding-top:0.9rem; margin: 3.2rem 0 1.3rem;
+  }
+  .section-head h2{
+    font-size:1.05rem; font-weight:600; color:#fbfaf5;
+  }
+  .section-head span{
+    font-size:0.7rem; color:var(--ink-dim);
+  }
+
+  /* ---------- panel + corner ticks ---------- */
+  .panel{
+    position:relative;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:1.7rem;
+  }
+  .tick{
+    position:absolute; width:11px; height:11px;
+    opacity:0; transition: opacity .2s ease, transform .2s ease;
+    pointer-events:none;
+  }
+  .tick.tl{ top:-1px; left:-1px; border-top:2px solid var(--amber); border-left:2px solid var(--amber); transform:translate(3px,3px); }
+  .tick.tr{ top:-1px; right:-1px; border-top:2px solid var(--amber); border-right:2px solid var(--amber); transform:translate(-3px,3px); }
+  .tick.bl{ bottom:-1px; left:-1px; border-bottom:2px solid var(--amber); border-left:2px solid var(--amber); transform:translate(3px,-3px); }
+  .tick.br{ bottom:-1px; right:-1px; border-bottom:2px solid var(--amber); border-right:2px solid var(--amber); transform:translate(-3px,-3px); }
+  .panel:hover .tick, .panel:focus-within .tick{ opacity:1; transform:translate(0,0); }
+
+  .panel h3{ font-size:1.15rem; color:#fbfaf5; font-weight:600; }
+
+  .metric-badge{
+    display:inline-flex; align-items:center; gap:0.4rem;
+    color:var(--scope);
+    font-size:0.78rem;
+    padding:0.3rem 0.1rem;
+    margin: 0.7rem 0 0.9rem;
+  }
+  .metric-badge svg{ width:13px; height:13px; flex:none; }
+
+  .panel p.desc{ color:var(--ink-dim); font-size:0.94rem; max-width:60ch; }
+
+  .tag-group{ display:flex; gap:0.5rem; flex-wrap:wrap; margin-top:1.1rem; }
+  .tag{
+    border:1px solid var(--line);
+    color:var(--ink-dim);
+    font-size:0.7rem;
+    padding:0.25rem 0.55rem;
+    border-radius:2px;
+  }
+
+  /* ---------- code block ---------- */
+  .code-wrap{ position:relative; margin-top:1.2rem; }
+  pre{
+    background:#070a06;
+    border:1px solid var(--line);
+    padding:1rem 1rem;
+    border-radius:2px;
+    font-size:0.82rem;
+    color:#cfe8dd;
+    overflow-x:auto;
+  }
+  .copy-btn{
+    position:absolute; top:0.6rem; right:0.6rem;
+    display:flex; align-items:center; gap:0.35rem;
+    background:var(--panel);
+    border:1px solid var(--line);
+    color:var(--ink-dim);
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.68rem;
+    padding:0.35rem 0.55rem;
+    border-radius:2px;
+    cursor:pointer;
+    transition: color .15s ease, border-color .15s ease;
+  }
+  .copy-btn:hover{ color:var(--amber); border-color:var(--amber); }
+  .copy-btn svg{ width:11px; height:11px; }
+
+  .repo-btn{
+    display:inline-flex; align-items:center; gap:0.55rem;
+    margin-top:1.15rem; padding:0.5rem 0.85rem;
+    border:1px solid var(--line); border-radius:2px;
+    font-size:0.76rem; color:var(--ink);
+    transition: color .15s ease, border-color .15s ease, background .15s ease;
+  }
+  .repo-btn svg{ width:15px; height:15px; flex:none; color:var(--amber); fill:currentColor; }
+  .repo-btn:hover{ color:var(--amber); border-color:var(--amber); background:rgba(255,180,84,0.06); }
+
+  /* ---------- in-progress marker ---------- */
+  .wip{
+    display:inline-flex; align-items:center; gap:0.4rem;
+    margin-left:0.7rem; padding:0.15rem 0.5rem;
+    border:1px solid rgba(255,180,84,0.4); border-radius:2px;
+    color:var(--amber); font-size:0.66rem; font-weight:400;
+    vertical-align:middle; white-space:nowrap;
+  }
+  .wip::before{
+    content:""; width:5px; height:5px; border-radius:50%;
+    background:var(--amber); animation: blink 2.4s ease-in-out infinite;
+  }
+  @keyframes blink{ 0%,100%{ opacity:1; } 50%{ opacity:0.3; } }
+  @media (prefers-reduced-motion: reduce){ .wip::before{ animation:none; } }
+
+  /* ---------- systems grid ---------- */
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; }
+  @media (max-width:640px){ .grid2{ grid-template-columns:1fr; } }
+
+  .sys-card p.desc{ font-size:0.88rem; margin-top:0.5rem; }
+
+  .detail-toggle{
+    background:none; border:none; cursor:pointer;
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.7rem; color:var(--ink-dim);
+    margin-top:1.1rem; padding:0;
+    display:flex; align-items:center; gap:0.4rem;
+  }
+  .detail-toggle:hover{ color:var(--scope); }
+  .detail-toggle svg{ width:9px; height:9px; transition:transform .2s ease; }
+  .detail-toggle[aria-expanded="true"] svg{ transform:rotate(90deg); }
+
+  .detail-panel{
+    max-height:0; overflow:hidden;
+    transition:max-height .3s ease;
+  }
+  .detail-panel .rows{ padding-top:0.9rem; }
+  .spec-row{
+    display:flex; justify-content:space-between;
+    font-size:0.78rem; padding:0.35rem 0;
+    border-top:1px solid var(--line);
+  }
+  .spec-row .k{ color:var(--ink-dim); }
+  .spec-row .v{ color:var(--scope); }
+
+  /* ---------- capabilities spec sheet ---------- */
+  .spec-sheet{ border-top:1px solid var(--line); }
+  .spec-line{
+    display:grid; grid-template-columns: 13rem 1fr;
+    gap:1rem;
+    padding:0.85rem 0;
+    border-bottom:1px solid var(--line);
+    font-size:0.88rem;
+  }
+  @media (max-width:600px){ .spec-line{ grid-template-columns:1fr; gap:0.2rem; } }
+  .spec-line .k{ color:var(--ink-dim); font-size:0.78rem; }
+  .spec-line .v{ color:var(--ink); }
+
+  /* ---------- footer ---------- */
+  footer{
+    margin-top:4rem; padding-top:1.4rem;
+    border-top:1px solid var(--line);
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:0.6rem;
+    font-size:0.72rem; color:var(--ink-dim);
+  }
+
+  
+
+</style>
+</head>
+<body>
+
+  <div class="grid-overlay"></div>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="gh" viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></symbol></svg>
+
+  <div class="wrap">
+
+    <header class="site">
+      <div class="brand">
+        <div class="id-chip" role="img" aria-label="Photo placeholder">
+          <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
+          <svg viewBox="0 0 44 44" fill="currentColor"><circle cx="22" cy="17" r="7"/><path d="M8 40c1-8 7-13 14-13s13 5 14 13z"/></svg>
+        </div>
+        <span class="brand-name">Abigail Diaz</span>
+      </div>
+      <div class="status-line">
+        <span class="status-dot"></span>
+        <span class="mono" id="clock">UTC --:--:--</span>
+      </div>
+      <nav class="links">
+        <a href="https://github.com/Abigail-Diaz" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://www.linkedin.com/in/abigail-diaz-sol/" target="_blank" rel="noopener">LinkedIn</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <div class="hero-copy">
+        <h1 class="headline">Low-level C++ for flight data and spatial systems.</h1>
+        <p class="sub">Systems engineer focused on telemetry ingest, binary log parsing, and navigation software for drones and ground stations.</p>
+
+        <div class="telemetry-strip">
+          <div class="telemetry-item">
+            <span class="t-label">status</span>
+            <span class="t-value amber">online</span>
+          </div>
+          <div class="telemetry-item">
+            <span class="t-label">uptime</span>
+            <span class="t-value mono" id="uptime">00:00:00</span>
+          </div>
+          <div class="telemetry-item">
+            <span class="t-label">stack</span>
+            <span class="t-value mono">C++20 · POSIX</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="orbit-wrap" aria-hidden="true">
+        <div class="orbit-path"></div>
+        <svg class="globe" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="26" fill="none" stroke="#24322a" stroke-width="1"/>
+          <ellipse cx="50" cy="50" rx="26" ry="9" fill="none" stroke="#24322a" stroke-width="1"/>
+          <ellipse cx="50" cy="50" rx="9" ry="26" fill="none" stroke="#24322a" stroke-width="1"/>
+          <line x1="24" y1="50" x2="76" y2="50" stroke="#24322a" stroke-width="1"/>
+        </svg>
+        <div class="orbit-rotator">
+          <div class="satellite"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURED PROJECT -->
+    <section>
+      <div class="section-head">
+        <h2>Featured system</h2>
+        <span class="mono">project 1 of 3</span>
+      </div>
+
+      <div class="panel">
+        <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
+
+        <h3>DuckDB PX4 ULog Extension<span class="wip mono">in progress</span></h3>
+        <div class="metric-badge mono">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg>
+          500MB binary parsed in 180ms — ~2.7 GB/s
+        </div>
+        <p class="desc">A native C++ DuckDB extension that reads raw PX4 binary drone flight logs (.ulg) directly into vectorized memory blocks using zero-copy memory mapping. Removes the Python/CSV conversion step that usually sits between a flight log and a query.</p>
+
+        <div class="tag-group mono">
+          <span class="tag">C++20</span>
+          <span class="tag">mmap</span>
+          <span class="tag">DuckDB C++ API</span>
+          <span class="tag">struct packing</span>
+        </div>
+
+        <div class="code-wrap">
+          <pre class="mono" id="codeBlock"><code>LOAD 'ulog_parser';
+
+SELECT timestamp, latitude, longitude, altitude
+FROM read_ulog('flight_001.ulg', topic='vehicle_global_position')
+WHERE altitude &gt; 100;</code></pre>
+          <button class="copy-btn" id="copyBtn" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="1"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+            <span id="copyLabel">copy</span>
+          </button>
+        </div>
+
+        <a class="repo-btn mono" href="https://github.com/yourhandle/duckdb-ulog" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#gh"/></svg>view repository</a>
+      </div>
+    </section>
+
+    <!-- SYSTEMS & ARCHITECTURE -->
+    <section>
+      <div class="section-head">
+        <h2>Systems &amp; architecture</h2>
+        <span class="mono">projects 2 and 3</span>
+      </div>
+
+      <div class="grid2">
+
+        <div class="panel sys-card">
+          <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
+          <h3>EagleNav Engine</h3>
+          <p class="desc">Sub-meter pedestrian navigation using custom topological routing logic over dockerized routing engines.</p>
+          <div class="tag-group mono">
+            <span class="tag">routing</span>
+            <span class="tag">spatial data</span>
+          </div>
+          <a class="repo-btn mono" href="https://github.com/yourhandle/eaglenav" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#gh"/></svg>view repository</a>
+          <button class="detail-toggle" aria-expanded="false" data-target="detail-eaglenav" type="button">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            <span>readout</span>
+          </button>
+          <div class="detail-panel" id="detail-eaglenav">
+            <div class="rows mono">
+              <div class="spec-row"><span class="k">graph size</span><span class="v">~40k nodes</span></div>
+              <div class="spec-row"><span class="k">query latency</span><span class="v">&lt;50ms p95</span></div>
+              <div class="spec-row"><span class="k">positioning</span><span class="v">sub-1m (RTK-assisted)</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel sys-card">
+          <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
+          <h3>UDP Telemetry Ingest &amp; Ring-Buffer Dispatcher<span class="wip mono">in progress</span></h3>
+          <p class="desc">A multi-threaded C++ daemon that receives live binary telemetry over UDP, as from a drone or rocket at a ground station. Packets land in a lock-free ring buffer and a worker thread pool parses and dispatches them in real time, so the socket never blocks.</p>
+          <div class="tag-group mono">
+            <span class="tag">C++20</span>
+            <span class="tag">lock-free</span>
+            <span class="tag">UDP</span>
+            <span class="tag">thread pool</span>
+          </div>
+          <a class="repo-btn mono" href="https://github.com/yourhandle/udp-telemetry-ingest" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#gh"/></svg>view repository</a>
+          <button class="detail-toggle" aria-expanded="false" data-target="detail-udp" type="button">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            <span>readout</span>
+          </button>
+          <div class="detail-panel" id="detail-udp">
+            <div class="rows mono">
+              <div class="spec-row"><span class="k">ingest</span><span class="v">UDP socket, never blocked</span></div>
+              <div class="spec-row"><span class="k">queue</span><span class="v">lock-free ring buffer</span></div>
+              <div class="spec-row"><span class="k">dispatch</span><span class="v">worker pool, real-time parse</span></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- CAPABILITIES -->
+    <section>
+      <div class="section-head">
+        <h2>Core capabilities</h2>
+        <span class="mono">datasheet</span>
+      </div>
+
+      <div class="spec-sheet mono">
+        <div class="spec-line">
+          <span class="k">languages</span>
+          <span class="v">C++20, C, assembly-level fluency</span>
+        </div>
+        <div class="spec-line">
+          <span class="k">low-level</span>
+          <span class="v">memory alignment, struct packing, endianness, bitwise ops</span>
+        </div>
+        <div class="spec-line">
+          <span class="k">systems &amp; data</span>
+          <span class="v">DuckDB extension API, POSIX I/O (mmap, read), CMake</span>
+        </div>
+        <div class="spec-line">
+          <span class="k">debugging</span>
+          <span class="v">gdb, valgrind, perf</span>
+        </div>
+      </div>
+    </section>
+
+    <footer class="mono">
+      <span>© 2026 Abigail Diaz</span>
+      <span id="footTime">—</span>
+    </footer>
+
+  </div>
+
+  
+
+<script>
+(function(){
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // boot sequence
+  function boot(){ document.documentElement.classList.add('ready'); }
+  if(reduceMotion){ boot(); } else { setTimeout(boot, 120); }
+
+  // live UTC clock
+  function pad(n){ return String(n).padStart(2,'0'); }
+  function tickClock(){
+    var d = new Date();
+    var s = 'UTC ' + pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()) + ':' + pad(d.getUTCSeconds());
+    var el = document.getElementById('clock');
+    if(el) el.textContent = s;
+    var foot = document.getElementById('footTime');
+    if(foot) foot.textContent = d.getUTCFullYear() + '-' + pad(d.getUTCMonth()+1) + '-' + pad(d.getUTCDate()) + ' ' + pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()) + 'Z';
+  }
+  tickClock();
+  setInterval(tickClock, 1000);
+
+  // uptime counter
+  var start = Date.now();
+  function tickUptime(){
+    var secs = Math.floor((Date.now() - start) / 1000);
+    var h = Math.floor(secs/3600), m = Math.floor((secs%3600)/60), s = secs%60;
+    var el = document.getElementById('uptime');
+    if(el) el.textContent = pad(h) + ':' + pad(m) + ':' + pad(s);
+  }
+  tickUptime();
+  setInterval(tickUptime, 1000);
+
+  
+
+  // copy to clipboard
+  var copyBtn = document.getElementById('copyBtn');
+  var codeBlock = document.getElementById('codeBlock');
+  var copyLabel = document.getElementById('copyLabel');
+  if(copyBtn){
+    copyBtn.addEventListener('click', function(){
+      var text = codeBlock ? codeBlock.textContent : '';
+      function done(){
+        if(copyLabel) copyLabel.textContent = 'copied';
+        setTimeout(function(){ if(copyLabel) copyLabel.textContent = 'copy'; }, 1500);
+      }
+      try{
+        if(navigator.clipboard && navigator.clipboard.writeText){
+          navigator.clipboard.writeText(text).then(done).catch(done);
+        } else {
+          var ta = document.createElement('textarea');
+          ta.value = text; document.body.appendChild(ta); ta.select();
+          try{ document.execCommand('copy'); }catch(err){}
+          document.body.removeChild(ta);
+          done();
+        }
+      }catch(err){ done(); }
+    });
+  }
+
+  // accordion toggles
+  var toggles = document.querySelectorAll('.detail-toggle');
+  toggles.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var targetId = btn.getAttribute('data-target');
+      var panel = document.getElementById(targetId);
+      if(!panel) return;
+      var expanded = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!expanded));
+      if(expanded){
+        panel.style.maxHeight = '0px';
+      } else {
+        panel.style.maxHeight = panel.scrollHeight + 'px';
+      }
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
