@@ -144,7 +144,6 @@
   nav.links a:first-child{ border-left:none; padding-left:0; }
   nav.links a:hover{ color:var(--amber); }
 
-
   @media (max-width:560px){
     .wrap{ padding:1.25rem 1rem 4rem; }
     header.site{
@@ -233,26 +232,7 @@
     opacity:1;
     transition: opacity 1s ease .4s;
   }
-  .orbit-path{
-    position:absolute; inset:12px;
-    border:1px dashed var(--line);
-    border-radius:50%;
-  }
-  .globe{ position:absolute; inset:0; width:100%; height:100%; }
-  .orbit-rotator{
-    position:absolute; inset:12px;
-    animation: spin 16s linear infinite;
-  }
-  @media (prefers-reduced-motion: reduce){
-    .orbit-rotator{ animation:none; }
-  }
-  .satellite{
-    position:absolute; top:-4px; left:50%;
-    width:8px; height:8px; margin-left:-4px;
-    background:var(--amber); border-radius:50%;
-    box-shadow:0 0 8px 1px rgba(255,180,84,0.75);
-  }
-  @keyframes spin{ to{ transform:rotate(360deg); } }
+  #orbitSvg{ display:block; width:100%; height:100%; overflow:visible; }
 
   /* ---------- section heading ---------- */
   .section-head{
@@ -319,21 +299,7 @@
     color:#cfe8dd;
     overflow-x:auto;
   }
-  .copy-btn{
-    position:absolute; top:0.6rem; right:0.6rem;
-    display:flex; align-items:center; gap:0.35rem;
-    background:var(--panel);
-    border:1px solid var(--line);
-    color:var(--ink-dim);
-    font-family:'JetBrains Mono', monospace;
-    font-size:0.68rem;
-    padding:0.35rem 0.55rem;
-    border-radius:2px;
-    cursor:pointer;
-    transition: color .15s ease, border-color .15s ease;
-  }
-  .copy-btn:hover{ color:var(--amber); border-color:var(--amber); }
-  .copy-btn svg{ width:11px; height:11px; }
+  
 
   .repo-btn{
     display:inline-flex; align-items:center; gap:0.55rem;
@@ -454,8 +420,8 @@
             <span class="t-value amber">online</span>
           </div>
           <div class="telemetry-item">
-            <span class="t-label">uptime</span>
-            <span class="t-value mono" id="uptime">00:00:00</span>
+            <span class="t-label">packets rx (sim)</span>
+            <span class="t-value mono" id="pktcount">0000</span>
           </div>
           <div class="telemetry-item">
             <span class="t-label">stack</span>
@@ -465,16 +431,19 @@
       </div>
 
       <div class="orbit-wrap" aria-hidden="true">
-        <div class="orbit-path"></div>
-        <svg class="globe" viewBox="0 0 100 100">
-          <circle cx="50" cy="50" r="26" fill="none" stroke="#24322a" stroke-width="1"/>
-          <ellipse cx="50" cy="50" rx="26" ry="9" fill="none" stroke="#24322a" stroke-width="1"/>
-          <ellipse cx="50" cy="50" rx="9" ry="26" fill="none" stroke="#24322a" stroke-width="1"/>
-          <line x1="24" y1="50" x2="76" y2="50" stroke="#24322a" stroke-width="1"/>
+        <svg id="orbitSvg" viewBox="0 0 190 190">
+          <circle cx="95" cy="95" r="83" fill="none" stroke="#24322a" stroke-dasharray="3 5"/>
+          <g fill="none" stroke="#24322a">
+            <circle cx="95" cy="95" r="49"/>
+            <ellipse cx="95" cy="95" rx="49" ry="17"/>
+            <ellipse cx="95" cy="95" rx="17" ry="49"/>
+            <line x1="46" y1="95" x2="144" y2="95"/>
+          </g>
+          <line id="link" stroke="#7fd9c4" stroke-width="1" stroke-dasharray="2 3" opacity="0"/>
+          <circle id="station" r="3" fill="#7fd9c4"/>
+          <circle id="packet" r="2" fill="#7fd9c4" opacity="0"/>
+          <circle id="sat" r="4" fill="#ffb454" cx="95" cy="12" style="filter:drop-shadow(0 0 4px rgba(255,180,84,0.8))"/>
         </svg>
-        <div class="orbit-rotator">
-          <div class="satellite"></div>
-        </div>
       </div>
     </section>
 
@@ -488,33 +457,21 @@
       <div class="panel">
         <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
 
-        <h3>DuckDB PX4 ULog Extension<span class="wip mono">in progress</span></h3>
+        <h3>UDP Telemetry Ingest &amp; Ring-Buffer Dispatcher<span class="wip mono">in progress</span></h3>
         <div class="metric-badge mono">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg>
-          500MB binary parsed in 180ms — ~2.7 GB/s
+          design goal: the socket never blocks on parsing
         </div>
-        <p class="desc">A native C++ DuckDB extension that reads raw PX4 binary drone flight logs (.ulg) directly into vectorized memory blocks using zero-copy memory mapping. Removes the Python/CSV conversion step that usually sits between a flight log and a query.</p>
+        <p class="desc">A multi-threaded C++ daemon that receives live binary telemetry over UDP, as from a drone or rocket at a ground station. Packets land in a lock-free ring buffer and a worker thread pool parses and dispatches them in real time, so the socket never blocks.</p>
 
         <div class="tag-group mono">
           <span class="tag">C++20</span>
-          <span class="tag">mmap</span>
-          <span class="tag">DuckDB C++ API</span>
-          <span class="tag">struct packing</span>
+          <span class="tag">lock-free</span>
+          <span class="tag">UDP</span>
+          <span class="tag">thread pool</span>
         </div>
 
-        <div class="code-wrap">
-          <pre class="mono" id="codeBlock"><code>LOAD 'ulog_parser';
-
-SELECT timestamp, latitude, longitude, altitude
-FROM read_ulog('flight_001.ulg', topic='vehicle_global_position')
-WHERE altitude &gt; 100;</code></pre>
-          <button class="copy-btn" id="copyBtn" type="button">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="1"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
-            <span id="copyLabel">copy</span>
-          </button>
-        </div>
-
-        <a class="repo-btn mono" href="https://github.com/Abigail-Diaz/duckdb-ulog" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#gh"/></svg>view repository</a>
+        <a class="repo-btn mono" href="https://github.com/Abigail-Diaz/UDP-Telemetry-Ingest-and-Ring-Buffer-Dispatcher" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#gh"/></svg>view repository</a>
       </div>
     </section>
 
@@ -526,6 +483,31 @@ WHERE altitude &gt; 100;</code></pre>
       </div>
 
       <div class="grid2">
+
+        <div class="panel sys-card">
+          <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
+          <h3>DuckDB PX4 ULog Extension<span class="wip mono">in progress</span></h3>
+          <p class="desc">A native C++ DuckDB extension that reads raw PX4 binary drone flight logs (.ulg) directly into vectorized memory blocks using zero-copy memory mapping. Removes the Python/CSV conversion step that usually sits between a flight log and a query.</p>
+          <div class="tag-group mono">
+            <span class="tag">C++20</span>
+            <span class="tag">mmap</span>
+            <span class="tag">DuckDB C++ API</span>
+            <span class="tag">struct packing</span>
+          </div>
+          <a class="repo-btn mono" href="https://github.com/Abigail-Diaz/duckdb-ulog" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#gh"/></svg>view repository</a>
+          <button class="detail-toggle" aria-expanded="false" data-target="detail-ulog" type="button">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            <span>readout</span>
+          </button>
+          <div class="detail-panel" id="detail-ulog">
+            <div class="rows mono">
+              <div class="spec-row"><span class="k">input</span><span class="v">PX4 .ulg binary logs</span></div>
+              <div class="spec-row"><span class="k">access</span><span class="v">mmap, zero-copy</span></div>
+              <div class="spec-row"><span class="k">interface</span><span class="v">SQL table function</span></div>
+              <div class="spec-row"><span class="k">benchmark</span><span class="v">500MB in 180ms (~2.7 GB/s)</span></div>
+            </div>
+          </div>
+        </div>
 
         <div class="panel sys-card">
           <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
@@ -545,30 +527,6 @@ WHERE altitude &gt; 100;</code></pre>
               <div class="spec-row"><span class="k">graph size</span><span class="v">~40k nodes</span></div>
               <div class="spec-row"><span class="k">query latency</span><span class="v">&lt;50ms p95</span></div>
               <div class="spec-row"><span class="k">positioning</span><span class="v">sub-1m (RTK-assisted)</span></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="panel sys-card">
-          <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
-          <h3>UDP Telemetry Ingest &amp; Ring-Buffer Dispatcher<span class="wip mono">in progress</span></h3>
-          <p class="desc">A multi-threaded C++ daemon that receives live binary telemetry over UDP, as from a drone or rocket at a ground station. Packets land in a lock-free ring buffer and a worker thread pool parses and dispatches them in real time, so the socket never blocks.</p>
-          <div class="tag-group mono">
-            <span class="tag">C++20</span>
-            <span class="tag">lock-free</span>
-            <span class="tag">UDP</span>
-            <span class="tag">thread pool</span>
-          </div>
-          <a class="repo-btn mono" href="https://github.com/Abigail-Diaz/UDP-Telemetry-Ingest-and-Ring-Buffer-Dispatcher" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#gh"/></svg>view repository</a>
-          <button class="detail-toggle" aria-expanded="false" data-target="detail-udp" type="button">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-            <span>readout</span>
-          </button>
-          <div class="detail-panel" id="detail-udp">
-            <div class="rows mono">
-              <div class="spec-row"><span class="k">ingest</span><span class="v">UDP socket, never blocked</span></div>
-              <div class="spec-row"><span class="k">queue</span><span class="v">lock-free ring buffer</span></div>
-              <div class="spec-row"><span class="k">dispatch</span><span class="v">worker pool, real-time parse</span></div>
             </div>
           </div>
         </div>
@@ -633,42 +591,49 @@ WHERE altitude &gt; 100;</code></pre>
   tickClock();
   setInterval(tickClock, 1000);
 
-  // uptime counter
-  var start = Date.now();
-  function tickUptime(){
-    var secs = Math.floor((Date.now() - start) / 1000);
-    var h = Math.floor(secs/3600), m = Math.floor((secs%3600)/60), s = secs%60;
-    var el = document.getElementById('uptime');
-    if(el) el.textContent = pad(h) + ':' + pad(m) + ':' + pad(s);
-  }
-  tickUptime();
-  setInterval(tickUptime, 1000);
-
-  
-
-  // copy to clipboard
-  var copyBtn = document.getElementById('copyBtn');
-  var codeBlock = document.getElementById('codeBlock');
-  var copyLabel = document.getElementById('copyLabel');
-  if(copyBtn){
-    copyBtn.addEventListener('click', function(){
-      var text = codeBlock ? codeBlock.textContent : '';
-      function done(){
-        if(copyLabel) copyLabel.textContent = 'copied';
-        setTimeout(function(){ if(copyLabel) copyLabel.textContent = 'copy'; }, 1500);
-      }
-      try{
-        if(navigator.clipboard && navigator.clipboard.writeText){
-          navigator.clipboard.writeText(text).then(done).catch(done);
-        } else {
-          var ta = document.createElement('textarea');
-          ta.value = text; document.body.appendChild(ta); ta.select();
-          try{ document.execCommand('copy'); }catch(err){}
-          document.body.removeChild(ta);
-          done();
+  // simulated satellite downlink
+  var svgEl = document.getElementById('orbitSvg');
+  var pktEl = document.getElementById('pktcount');
+  if(svgEl){
+    var C=95, R=83, G=49, A_ST=0.9, WIN=0.62, PERIOD=16000, PKT_MS=650;
+    var sat=document.getElementById('sat'), station=document.getElementById('station');
+    var link=document.getElementById('link'), packet=document.getElementById('packet');
+    var stx=C+G*Math.sin(A_ST), sty=C-G*Math.cos(A_ST);
+    station.setAttribute('cx',stx); station.setAttribute('cy',sty);
+    var count=0, lastCyc=-1;
+    function place(a){
+      var x=C+R*Math.sin(a), y=C-R*Math.cos(a);
+      sat.setAttribute('cx',x); sat.setAttribute('cy',y);
+      return [x,y];
+    }
+    function setLink(p,op){
+      link.setAttribute('x1',p[0]); link.setAttribute('y1',p[1]);
+      link.setAttribute('x2',stx); link.setAttribute('y2',sty);
+      link.setAttribute('opacity',op);
+    }
+    function frame(t){
+      var a=(t/PERIOD*2*Math.PI) % (2*Math.PI);
+      var p=place(a);
+      var d=Math.abs(a-A_ST); if(d>Math.PI) d=2*Math.PI-d;
+      var inWin=d<WIN;
+      setLink(p, inWin ? (1-d/WIN)*0.9 : 0);
+      var cyc=Math.floor(t/PKT_MS), f=(t%PKT_MS)/PKT_MS;
+      if(inWin){
+        packet.setAttribute('cx',p[0]+(stx-p[0])*f);
+        packet.setAttribute('cy',p[1]+(sty-p[1])*f);
+        packet.setAttribute('opacity',1);
+        if(cyc!==lastCyc && lastCyc>=0){
+          count++;
+          if(pktEl) pktEl.textContent=String(count).padStart(4,'0');
         }
-      }catch(err){ done(); }
-    });
+      } else {
+        packet.setAttribute('opacity',0);
+      }
+      lastCyc=cyc;
+      requestAnimationFrame(frame);
+    }
+    if(reduceMotion){ setLink(place(A_ST-0.25),0.8); }
+    else { requestAnimationFrame(frame); }
   }
 
   // accordion toggles
